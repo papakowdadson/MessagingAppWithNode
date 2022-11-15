@@ -2,25 +2,63 @@ const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const socketio = require("socket.io");
+const path = require('path')
 const { Vonage } = require("@vonage/server-sdk");
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const vonage = new Vonage({
+  apiKey: process.env.VONAGE_API_KEY,
+  apiSecret: process.env.VONAGE_API_SECRET
+})
+
+console.log(`${process.env.VONAGE_API_KEY}`)
+console.log(process.env.VONAGE_API_SECRET)
 
 const app = express();
 
 //template engine
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine','html')
 app.engine('html',ejs.renderFile)
 
 //public folder setup
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(path.join(__dirname,'/public')))
 
 //body parser for middleware
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 
 app.get("/", (req, res) => {
-  res.send("hi");
+  res.render("index");
 });
+
+app.post('/',(req,res)=>{
+  console.log(req.body)
+
+  const to=req.body.to;
+  const from=req.body.from
+  const text=req.body.text
+
+  async function sendSMS() {
+    await vonage.sms.send({to,from,text})
+        .then(resp => { console.log('Message sent successfully'); console.log(resp); 
+    //  emmitting response
+})
+        .catch(err => { console.log('There was an error sending the messages.'); console.error(err); });
+}
+sendSMS();
+
+})
 
 const port = 5000;
 
-app.listen(port, () => console.log(`server running on port ${port}`));
+const server = app.listen(port, () => console.log(`server running on port ${port}`));
+const io =socketio(server)
+io.on('connection',(socket)=>{console.log('connecting');
+io.on('disconnect',()=>{
+  console.log('disconnected')
+})
+
+})
