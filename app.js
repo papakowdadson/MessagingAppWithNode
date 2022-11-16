@@ -1,22 +1,26 @@
+require('dotenv').config({path:__dirname+'/d.env'});
 const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const socketio = require("socket.io");
 const path = require('path')
 const { Vonage } = require("@vonage/server-sdk");
-const dotenv = require('dotenv');
 
-dotenv.config();
+const app = express();
+
+console.log(process.env)
+console.log(`${process.env.VONAGEAPIKEY}`)
+console.log(process.env.VONAGEAPISECRET)
 
 const vonage = new Vonage({
   apiKey: process.env.VONAGE_API_KEY,
   apiSecret: process.env.VONAGE_API_SECRET
 })
 
-console.log(`${process.env.VONAGE_API_KEY}`)
-console.log(process.env.VONAGE_API_SECRET)
 
-const app = express();
+
+
+
 
 //template engine
 app.set('views', path.join(__dirname, 'views'));
